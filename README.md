@@ -39,7 +39,8 @@ Design and implement a **real-world vending machine** that:
 
 | Home Screen | Purchase Flow |
 |------------|-------------|
-| ![](assets/home.png) | ![](assets/purchase.png) | ![](assets/terminal.png) 
+| ![](assets/home.png) | ![](assets/coin.png) | 
+| ![](assets/purchase.png) | ![](assets/terminal.png) | 
 
 ## 🎯 Use Case
 
