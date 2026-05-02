@@ -37,17 +37,21 @@ Design and implement a **real-world vending machine** that:
 
 ## 🖥️ Screenshots
 
-### 🏠 Home & Coin Insert
-| Home Screen | Insert Coin |
-|-------------|------------|
-| <img src="assets/home.png" width="250"/> | <img src="assets/coin.png" width="250"/> |
 
----
 
-### 🛒 Purchase & Terminal Logs
-| Purchase Flow | Terminal Output |
-|---------------|----------------|
-| <img src="assets/purchase.png" width="250"/> | <img src="assets/terminal.png" width="250"/> |
+<div align="center">
+
+<p>
+  <img src="assets/home.png" width="300"/>
+  <img src="assets/coin.png" width="300"/>
+</p>
+
+<p>
+  <img src="assets/purchase.png" width="300"/>
+  <img src="assets/terminal.png" width="300"/>
+</p>
+
+</div>
 
 ## 🎯 Use Case
 
