@@ -17,11 +17,15 @@ Design and implement a **real-world vending machine** that:
 - Logs every transaction (sale, cancel, timeout) for admin reporting
 
 ---
-## Demo
-![Demo](https://youtu.be/06QEcSA6M-4)
+## 🎥 Demo Video
 
-## Screenshots
-![Home](screenshots/home.png) ![Payment](screenshots/payment.png)
+[![Watch the demo](https://img.youtube.com/vi/06QEcSA6M-4/0.jpg)](https://youtu.be/06QEcSA6M-4)
+
+## 🖥️ Screenshots
+
+| Home Screen | Purchase Flow |
+|------------|-------------|
+| ![](assets/home.png) | ![](assets/purchase.png) |
 
 ## 🎯 Use Case
 
