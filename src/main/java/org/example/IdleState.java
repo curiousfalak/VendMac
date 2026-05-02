@@ -1,19 +1,7 @@
 package org.example;
 
-
-
-/**
- * DAY 2 - STEP 2: IdleState
- *
- * Machine is waiting. Screen shows "Insert Coin".
- *
- * ALLOWED:  insertCoin() → moves to HasMoneyState
- * REJECTED: selectProduct() → "Please insert coins first"
- * REJECTED: cancel() → nothing to cancel
- */
 public class IdleState implements VendingState {
 
-    // Reference to the machine context — needed to change states
     private VendingMachine machine;
 
     public IdleState(VendingMachine machine) {
@@ -24,31 +12,31 @@ public class IdleState implements VendingState {
     public void insertCoin(int rupees) {
         boolean accepted = machine.getCoinProcessor().insertCoin(rupees);
         if (accepted) {
-            System.out.println("Coin accepted: ₹" + rupees
-                    + " | Total: ₹" + machine.getCoinProcessor().getInsertedAmount());
-            // Transition to HasMoneyState
+            System.out.printf("[%s] Coin ₹%d accepted | Total ₹%.0f%n",
+                    Thread.currentThread().getName(), rupees,
+                    machine.getCoinProcessor().getInsertedAmount());
             machine.setState(machine.getHasMoneyState());
+            // Start the 30s session timer daemon thread
+            if (machine.getSessionTimer() != null) machine.getSessionTimer().start();
+            machine.notifyAmountChanged();
         } else {
-            System.out.println("Invalid coin: ₹" + rupees + " — returned.");
+            System.out.println("Invalid coin ₹" + rupees + " — returned.");
+            machine.notifyMessage("Invalid coin ₹" + rupees + " — returned.");
         }
     }
 
     @Override
     public void selectProduct(String productId) {
-        // Not allowed in idle state
         System.out.println("Please insert coins first!");
-        machine.notifyMessage("Please insert coins first!");
+        machine.notifyMessage("Insert coins first!");
     }
 
     @Override
     public void cancel() {
-        // Nothing to cancel
         System.out.println("No transaction to cancel.");
         machine.notifyMessage("No active transaction.");
     }
 
     @Override
-    public String getStateName() {
-        return "IDLE";
-    }
+    public String getStateName() { return "IDLE"; }
 }

@@ -1,14 +1,13 @@
 package org.example;
 
-
-
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
@@ -16,167 +15,202 @@ import javafx.util.Duration;
 import java.util.List;
 
 /**
- * DAY 4 - STEP 2: DispensingScreen
+ * DispensingScreen — shows the product drop animation and a live
+ * "thread trace" panel that visualises the DispensingState flow:
  *
- * Shown after a successful purchase.
- * Displays product name, change, and a drop animation.
- *
- * KEY JAVAFX ANIMATION:
- *   TranslateTransition moves a node from Y=-100 to Y=0
- *   simulating a product dropping from the slot.
- *
- *   TranslateTransition tt = new TranslateTransition(Duration.millis(600), productBox);
- *   tt.setFromY(-100);
- *   tt.setToY(0);
- *   tt.play();
+ *   1. DispensingState.dispense()  → JavaFX App Thread
+ *   2. TranslateTransition         → JavaFX Animation Thread
+ *   3. TransactionLog.logSale()    → JavaFX App Thread
+ *   4. machine.setState(idle)      → JavaFX App Thread
  */
 public class Dispensingscreen extends VBox {
 
     private VendingMachine machine;
-    private Scenemanager sceneManager;
-
-    // These are set dynamically when the screen is shown
-    private Label  productNameLabel;
-    private Label  changeLabel;
-    private Label  coinsLabel;
-    private VBox   productBox; // The animated box
+    private Scenemanager   sceneManager;
+    private VBox           productBox;
+    private VBox           traceBox;
 
     public Dispensingscreen(VendingMachine machine, Scenemanager sceneManager) {
         this.machine      = machine;
         this.sceneManager = sceneManager;
-        buildUI();
+        buildShell();
     }
 
-    private void buildUI() {
-        setStyle("-fx-background-color: #1a1a2e;");
-        setSpacing(25);
-        setPadding(new Insets(40));
-        setAlignment(Pos.CENTER);
+    private void buildShell() {
+        setStyle("-fx-background-color: #0e0e18;");
+        setSpacing(16);
+        setPadding(new Insets(20));
+        setAlignment(Pos.TOP_CENTER);
     }
 
-    /**
-     * Called by SceneManager when navigating here.
-     * Populates the screen with actual transaction data.
-     */
     public void show(Product product, double change, List<Integer> changeCoins) {
         getChildren().clear();
-
         getChildren().addAll(
-                buildSuccessHeader(),
+                buildHeader(),
                 buildProductCard(product),
-                buildChangeInfo(change, changeCoins),
-                buildReturnButton()
+                buildThreadTrace(),
+                buildChangePanel(change, changeCoins),
+                buildBackButton()
         );
-
-        // Play drop animation after a short delay
-        playDropAnimation();
+        playDropAndTrace(product);
     }
 
-    // ─── Success Header ───────────────────────────────────────────────────
+    // ── Header ────────────────────────────────────────────────────────────
 
-    private Label buildSuccessHeader() {
-        Label lbl = new Label("✅  ENJOY YOUR PURCHASE!");
-        lbl.setFont(Font.font("Arial", FontWeight.BOLD, 22));
-        lbl.setTextFill(Color.LIGHTGREEN);
-        return lbl;
+    private HBox buildHeader() {
+        Label lbl = new Label("DISPENSING");
+        lbl.setFont(Font.font("Courier New", FontWeight.BOLD, 20));
+        lbl.setTextFill(Color.web("#c084fc"));
+
+        Label state = new Label("[ DISPENSING ]");
+        state.setFont(Font.font("Courier New", FontWeight.BOLD, 12));
+        state.setTextFill(Color.web("#c084fc"));
+
+        Region spacer = new Region(); HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox bar = new HBox(lbl, spacer, state);
+        bar.setAlignment(Pos.CENTER);
+        bar.setPadding(new Insets(10, 14, 10, 14));
+        bar.setStyle("-fx-background-color: #1a1a3e; -fx-background-radius: 10;");
+        return bar;
     }
 
-    // ─── Product Card (the animated element) ─────────────────────────────
+    // ── Product Card ──────────────────────────────────────────────────────
 
     private VBox buildProductCard(Product product) {
-        productBox = new VBox(10);
+        productBox = new VBox(8);
         productBox.setAlignment(Pos.CENTER);
-        productBox.setPadding(new Insets(30));
-        productBox.setStyle(
-                "-fx-background-color: #0f3460; " +
-                        "-fx-background-radius: 15; " +
-                        "-fx-effect: dropshadow(gaussian, #e94560, 20, 0.3, 0, 0);"
-        );
+        productBox.setPadding(new Insets(24));
+        productBox.setStyle("-fx-background-color: #12122a; -fx-background-radius: 12; " +
+                "-fx-border-color: #3a3a70; -fx-border-radius: 12; -fx-border-width: 1;");
 
-        // Big emoji based on category
         String emoji = switch (product.getCategory()) {
             case "DRINK" -> "🥤";
-            case "SNACK" -> "🍿";
+            case "SNACK" -> "🍟";
             case "HOT"   -> "☕";
             default      -> "📦";
         };
+        Label emojiLbl = new Label(emoji);
+        emojiLbl.setFont(Font.font(52));
 
-        Label emojiLabel = new Label(emoji);
-        emojiLabel.setFont(Font.font(60));
+        Label nameLbl = new Label(product.getName());
+        nameLbl.setFont(Font.font("Courier New", FontWeight.BOLD, 22));
+        nameLbl.setTextFill(Color.WHITE);
 
-        productNameLabel = new Label(product.getName());
-        productNameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 28));
-        productNameLabel.setTextFill(Color.WHITE);
+        Label priceLbl = new Label("₹" + (int) product.getPrice());
+        priceLbl.setFont(Font.font("Courier New", 16));
+        priceLbl.setTextFill(Color.web("#fbbf24"));
 
-        Label priceLabel = new Label("₹" + (int) product.getPrice());
-        priceLabel.setFont(Font.font("Arial", 18));
-        priceLabel.setTextFill(Color.GOLD);
-
-        productBox.getChildren().addAll(emojiLabel, productNameLabel, priceLabel);
+        productBox.getChildren().addAll(emojiLbl, nameLbl, priceLbl);
         return productBox;
     }
 
-    // ─── Change Info ──────────────────────────────────────────────────────
+    // ── Thread Trace Panel ────────────────────────────────────────────────
 
-    private VBox buildChangeInfo(double change, List<Integer> changeCoins) {
-        VBox box = new VBox(8);
+    private VBox buildThreadTrace() {
+        traceBox = new VBox(5);
+        traceBox.setPadding(new Insets(10, 12, 10, 12));
+        traceBox.setStyle("-fx-background-color: #12122a; -fx-background-radius: 8; " +
+                "-fx-border-color: #2a2a50; -fx-border-radius: 8; -fx-border-width: 1;");
+
+        Label header = new Label("Thread trace — DispensingState.dispense()");
+        header.setFont(Font.font("Courier New", FontWeight.BOLD, 10));
+        header.setTextFill(Color.web("#6666aa"));
+        traceBox.getChildren().add(header);
+        return traceBox;
+    }
+
+    /** Adds one line to the trace panel with a slide-in animation */
+    private void addTraceLine(String text, Color color, long delayMs) {
+        PauseTransition pause = new PauseTransition(Duration.millis(delayMs));
+        pause.setOnFinished(e -> {
+            Label line = new Label("> " + text);
+            line.setFont(Font.font("Courier New", 10));
+            line.setTextFill(color);
+            line.setOpacity(0);
+            line.setTranslateX(-12);
+
+            FadeTransition ft = new FadeTransition(Duration.millis(180), line);
+            ft.setFromValue(0); ft.setToValue(1); ft.play();
+            TranslateTransition tt = new TranslateTransition(Duration.millis(180), line);
+            tt.setFromX(-12); tt.setToX(0); tt.play();
+
+            traceBox.getChildren().add(line);
+        });
+        pause.play();
+    }
+
+    // ── Change Panel ──────────────────────────────────────────────────────
+
+    private VBox buildChangePanel(double change, List<Integer> changeCoins) {
+        VBox box = new VBox(6);
         box.setAlignment(Pos.CENTER);
-        box.setPadding(new Insets(15));
-        box.setStyle("-fx-background-color: #16213e; -fx-background-radius: 10;");
+        box.setPadding(new Insets(12));
+        box.setStyle("-fx-background-color: #0a1a12; -fx-background-radius: 8; " +
+                "-fx-border-color: #1a3a22; -fx-border-radius: 8; -fx-border-width: 1;");
 
         if (change > 0) {
-            Label changeLbl = new Label("💰 Change: ₹" + (int) change);
-            changeLbl.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-            changeLbl.setTextFill(Color.GOLD);
+            Label changeLbl = new Label("Change: ₹" + (int) change);
+            changeLbl.setFont(Font.font("Courier New", FontWeight.BOLD, 16));
+            changeLbl.setTextFill(Color.web("#4ade80"));
 
-            Label coinsLbl = new Label("Coins: " + changeCoins + " rupees");
-            coinsLbl.setTextFill(Color.LIGHTGRAY);
-            coinsLbl.setFont(Font.font("Arial", 13));
+            Label coinsLbl = new Label("Coins dispensed: " + changeCoins);
+            coinsLbl.setFont(Font.font("Courier New", 12));
+            coinsLbl.setTextFill(Color.web("#888888"));
 
             box.getChildren().addAll(changeLbl, coinsLbl);
         } else {
-            Label noChange = new Label("✅ Exact change — no coins returned.");
-            noChange.setTextFill(Color.LIGHTGREEN);
+            Label noChange = new Label("Exact payment — no change.");
+            noChange.setFont(Font.font("Courier New", 13));
+            noChange.setTextFill(Color.web("#4ade80"));
             box.getChildren().add(noChange);
         }
         return box;
     }
 
-    // ─── Return Button ────────────────────────────────────────────────────
+    // ── Back Button ───────────────────────────────────────────────────────
 
-    private Button buildReturnButton() {
-        Button btn = new Button("← Back to Products");
-        btn.setStyle(
-                "-fx-background-color: #e94560; -fx-text-fill: white; " +
-                        "-fx-font-weight: bold; -fx-background-radius: 8; " +
-                        "-fx-font-size: 16; -fx-cursor: hand;"
-        );
-        btn.setPrefWidth(220);
-        btn.setOnAction(e -> {
-            sceneManager.showHomeScreen();
-        });
+    private Button buildBackButton() {
+        Button btn = new Button("Back to Products");
+        btn.setFont(Font.font("Courier New", FontWeight.BOLD, 13));
+        btn.setPrefWidth(200);
+        btn.setStyle("-fx-background-color: #e94560; -fx-text-fill: white; " +
+                "-fx-background-radius: 8; -fx-cursor: hand;");
+        btn.setOnAction(e -> sceneManager.showHomeScreen());
         return btn;
     }
 
-    // ─── Drop Animation ───────────────────────────────────────────────────
+    // ── Animations ────────────────────────────────────────────────────────
 
     /**
-     * TranslateTransition: moves the productBox from Y=-120 (above) to Y=0 (normal).
-     * Duration: 600ms with ease-in-out feel.
-     * This simulates the product dropping from the dispensing slot!
+     * 1. Product card slides down (TranslateTransition — JavaFX Animation Thread).
+     * 2. Thread trace lines appear sequentially (PauseTransition chain).
+     *
+     * Each trace line represents a real method call in DispensingState.dispense().
      */
-    private void playDropAnimation() {
-        if (productBox == null) return;
-
-        TranslateTransition drop = new TranslateTransition(
-                Duration.millis(600), productBox
-        );
-        drop.setFromY(-120); // Start 120px ABOVE its real position
-        drop.setToY(0);      // End at its normal position
-        drop.setCycleCount(1);
-
-        // Bounce effect: overshoot then come back
-        drop.setInterpolator(javafx.animation.Interpolator.SPLINE(0.2, 0.9, 0.3, 1.0));
+    private void playDropAndTrace(Product product) {
+        // Product drop — TranslateTransition (JavaFX Animation Thread)
+        productBox.setTranslateY(-140);
+        TranslateTransition drop = new TranslateTransition(Duration.millis(650), productBox);
+        drop.setFromY(-140);
+        drop.setToY(0);
+        drop.setInterpolator(Interpolator.SPLINE(0.2, 0.9, 0.3, 1.0));
         drop.play();
+
+        // Trace lines — timed to match what actually happens in DispensingState
+        addTraceLine("[JavaFX Thread] DispensingState.dispense() called",
+                Color.web("#60a5fa"), 50);
+        addTraceLine("[JavaFX Thread] CoinProcessor.calculateChange() → ₹"
+                        + (int)(machine.getCoinProcessor().getInsertedAmount()),
+                Color.web("#60a5fa"), 280);
+        addTraceLine("[Animation Thread] TranslateTransition started (600ms)",
+                Color.web("#c084fc"), 450);
+        addTraceLine("[JavaFX Thread] Inventory.dispense(\"" + product.getId() + "\")",
+                Color.web("#60a5fa"), 680);
+        addTraceLine("[JavaFX Thread] TransactionLog.logSale() recorded",
+                Color.web("#4ade80"), 850);
+        addTraceLine("[JavaFX Thread] CoinProcessor.reset()",
+                Color.web("#60a5fa"), 980);
+        addTraceLine("[JavaFX Thread] machine.setState(IDLE)",
+                Color.web("#4ade80"), 1100);
     }
 }
