@@ -42,7 +42,7 @@ Design and implement a **real-world vending machine** that:
 
 <h3>🏠 Home & 💰 Coin Insert</h3>
 <img src="assets/home.png" height="250"/>
-<img src="assets/coin.png" height="250"/>
+<img src="assets/coins.png" height="250"/>
 
 <br/>
 
