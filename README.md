@@ -17,6 +17,20 @@ Design and implement a **real-world vending machine** that:
 - Logs every transaction (sale, cancel, timeout) for admin reporting
 
 ---
+## 🛠️ Tech Stack
+ 
+| Layer | Technology |
+|---|---|
+| Language | Java 17 |
+| UI Framework | JavaFX 21 |
+| Build Tool | Maven |
+| Testing | JUnit 5 |
+| Concurrency | `ScheduledExecutorService`, `Platform.runLater()` |
+| Data Structures | `HashMap` (Inventory), `ArrayList` (TransactionLog, change coins) |
+| Design Pattern | State Pattern, Observer (callbacks) |
+| Animations | `TranslateTransition`, `ScaleTransition`, `FadeTransition`, `Timeline` |
+ 
+---
 ## 🎥 Demo Video
 
 [![Watch the demo](https://img.youtube.com/vi/06QEcSA6M-4/0.jpg)](https://youtu.be/06QEcSA6M-4)
