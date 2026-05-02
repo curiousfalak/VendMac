@@ -38,18 +38,18 @@ Design and implement a **real-world vending machine** that:
 ## 🖥️ Screenshots
 
 
-
 <div align="center">
 
-<p>
-  <img src="assets/home.png" width="300"/>
-  <img src="assets/coin.png" width="300"/>
-</p>
-
-<p>
-  <img src="assets/purchase.png" width="300"/>
-  <img src="assets/terminal.png" width="300"/>
-</p>
+<table>
+  <tr>
+    <td><img src="assets/home.png" width="300"/></td>
+    <td><img src="assets/coin.png" width="300"/></td>
+  </tr>
+  <tr>
+    <td><img src="assets/purchase.png" width="300"/></td>
+    <td><img src="assets/terminal.png" width="300"/></td>
+  </tr>
+</table>
 
 </div>
 
