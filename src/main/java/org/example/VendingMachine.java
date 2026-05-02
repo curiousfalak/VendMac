@@ -3,6 +3,7 @@ package org.example;
 
 import java.util.List;
 
+
 /**
  * DAY 2 - STEP 5: VendingMachine (Context Class)
  *
@@ -29,7 +30,7 @@ public class VendingMachine {
     // ─── State objects (created ONCE, reused — no GC pressure) ───────────
     private IdleState       idleState;
     private HasMoneyState   hasMoneyState;
-    private DispensingState dispensingState;
+    private DispensiongState dispensingState;
 
     // ─── Current active state ─────────────────────────────────────────────
     private VendingState currentState;
@@ -73,7 +74,7 @@ public class VendingMachine {
         // Create state objects — pass 'this' so states can call machine methods
         idleState       = new IdleState(this);
         hasMoneyState   = new HasMoneyState(this);
-        dispensingState = new DispensingState(this);
+        dispensingState = new DispensiongState(this);
 
         // Start in IDLE state
         currentState = idleState;
@@ -107,7 +108,7 @@ public class VendingMachine {
     public VendingState getCurrentState()    { return currentState; }
     public IdleState    getIdleState()        { return idleState; }
     public HasMoneyState getHasMoneyState()  { return hasMoneyState; }
-    public DispensingState getDispensingState() { return dispensingState; }
+    public DispensiongState getDispensingState() { return dispensingState; }
 
     // ─── Getters for shared resources ────────────────────────────────────
 

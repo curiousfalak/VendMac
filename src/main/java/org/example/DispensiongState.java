@@ -15,11 +15,11 @@ import java.util.List;
  * dispense() is called internally (not from the interface)
  * to perform the actual dispensing logic.
  */
-public class DispensingState implements VendingState {
+public class DispensiongState implements VendingState {
 
     private VendingMachine machine;
 
-    public DispensingState(VendingMachine machine) {
+    public DispensiongState(VendingMachine machine) {
         this.machine = machine;
     }
 
