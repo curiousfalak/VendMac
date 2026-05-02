@@ -37,16 +37,17 @@ Design and implement a **real-world vending machine** that:
 
 ## 🖥️ Screenshots
 
+
 <div align="center">
 
-<h3>🏠 Home Screen</h3>
-<img src="assets/home.png" height="300"/>
+<h3>🏠 Home & 💰 Coin Insert</h3>
+<img src="assets/home.png" height="250"/>
+<img src="assets/coin.png" height="250"/>
 
-<h3>💰 Coin Insert</h3>
-<img src="assets/coins.png" height="300"/>
+<br/>
 
 <h3>🛒 Purchase Flow</h3>
-<img src="assets/purchase.png" height="300"/>
+<img src="assets/purchase.png" height="250"/>
 
 </div>
 
