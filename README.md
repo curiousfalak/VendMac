@@ -1,4 +1,4 @@
-# 🏧 Vending Machine — Java + JavaFX
+# 🏧 Vending Machine
 
 > A fully functional, animated vending machine simulation built with **Java**, **JavaFX**, and **JUnit 5** — demonstrating the **State Design Pattern**, clean OOP hierarchy, background threading, and real-time UI callbacks.
 
